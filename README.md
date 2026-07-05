@@ -1,16 +1,35 @@
-# React + Vite
+Hello there viewer! This is a Todo app built with React. This little app is designed to help you learn the basics of React and understand how to prepare, build, and work through the material as you go.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Installation
 
-Currently, two official plugins are available:
+Before getting started, make sure you have Node.js installed. Without it, your terminal won’t recognize the commands used to run the project.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+If you are using this project from GitHub, first clone the repository:
 
-## React Compiler
+git clone your-repository-url
+cd your-project-name
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+If you are creating a new project, run:
 
-## Expanding the ESLint configuration
+npx create-vite@latest
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Follow the prompts:
+
+Name your project
+Select React
+Select JavaScript
+
+Then move into your project folder:
+
+cd your-project-name
+
+Install the required dependencies:
+
+npm install
+Run the Development Server
+
+To start the app, run:
+
+npm run dev
+
+After running this command, your terminal will display a local URL (usually something like http://localhost:5173/). Open that link in your browser to view the app.
