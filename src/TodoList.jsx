@@ -1,16 +1,24 @@
 import TodoListItem from "./TodoListItem.jsx";
 
-//This is holding the data
-function TodoList({ todoList }) {
-  // recieves data
+function TodoList({ todoList, onCompleteTodo }) {
+  const clear = todoList.length === 0;
+
   return (
-    <ul>
-      {todoList.map((todo) => (
-        // Will loop through the data
-        <TodoListItem todo={todo} key={todo.id} />
-      ))}
-    </ul>
-    //(<TodoListItem todo={todo} key={todo.id}/>)))} Is how the data gets Rendered
+    <>
+      {clear ? (
+        <p>Add todo above to get started</p>
+      ) : (
+        <ul>
+          {todoList.map((todo) => (
+            <TodoListItem
+              todo={todo}
+              key={todo.id}
+              onCompleteTodo={onCompleteTodo}
+            />
+          ))}
+        </ul>
+      )}
+    </>
   );
 }
 
