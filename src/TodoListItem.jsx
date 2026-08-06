@@ -14,4 +14,5 @@ function TodoListItem({ todo, onCompleteTodo }) {
     // and this is how it gets displayed
   );
 }
+
 export default TodoListItem;
