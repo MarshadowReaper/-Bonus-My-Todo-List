@@ -4,6 +4,10 @@ import { isValidTodoTitle } from "../../utils/todoValidation";
 function TodoListItem({ todo, onCompleteTodo, onUpdateTodo }) {
   const [isEditing, setIsEditing] = useState(false);
   const [workingTitle, setWorkingTitle] = useState(todo.title);
+  const handleStartEdit = () => {
+    setWorkingTitle(todo.title);
+    setIsEditing(true);
+  };
   const handleCancel = () => {
     setWorkingTitle(todo.title);
     setIsEditing(false);
@@ -51,15 +55,7 @@ function TodoListItem({ todo, onCompleteTodo, onUpdateTodo }) {
             checked={todo.isCompleted}
             onChange={() => onCompleteTodo(todo.id)}
           />
-
-          <span
-            onClick={() => {
-              setWorkingTitle(todo.title);
-              setIsEditing(true);
-            }}
-          >
-            {todo.title}
-          </span>
+          <span onClick={handleStartEdit}>{todo.title}</span>
         </>
       )}
     </li>
