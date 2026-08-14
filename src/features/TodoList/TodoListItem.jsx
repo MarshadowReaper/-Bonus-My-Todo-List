@@ -10,6 +10,8 @@ function TodoListItem({ todo, onCompleteTodo, onUpdateTodo }) {
   };
 
   const handleUpdate = (event) => {
+    if (!isEditing) return;
+
     event.preventDefault();
     if (!isValidTodoTitle(workingTitle)) return;
 

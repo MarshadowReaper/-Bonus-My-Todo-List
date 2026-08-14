@@ -27,7 +27,7 @@ function TodoForm({ onAddTodo }) {
         labelText="Todo"
         value={workingTodoTitle}
         onChange={handleChange}
-        inputRef={inputRef}
+        ref={inputRef}
       />
 
       <button type="submit" disabled={!isValidTodoTitle(workingTodoTitle)}>
