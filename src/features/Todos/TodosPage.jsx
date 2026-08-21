@@ -11,7 +11,11 @@ function TodosPage({ token }) {
     setError("");
 
     try {
-      const response = await fetch("/api/tasks", {
+      const params = new URLSearchParams({
+        limit: 100,
+      });
+
+      const response = await fetch(`/api/tasks?${params}`, {
         headers: {
           "X-CSRF-TOKEN": token,
         },
@@ -78,7 +82,7 @@ function TodosPage({ token }) {
     const original = [...todoList];
     const updatedList = todoList.map((todo) => {
       if (todo.id === id) {
-        return { ...todo, isCompleted: !todo.isCompleted };
+        return { ...todo, isCompleted: true };
       } else {
         return todo;
       }
@@ -109,7 +113,6 @@ function TodosPage({ token }) {
   }
 
   const updateTodo = async (editedTodo) => {
-    const originalTodo = todoList.find((t) => t.id === editedTodo.id);
     const original = [...todoList];
     const updatedTodos = todoList.map((todo) => {
       if (todo.id === editedTodo.id) {
@@ -130,7 +133,6 @@ function TodosPage({ token }) {
         body: JSON.stringify({
           title: editedTodo.title,
           isCompleted: editedTodo.isCompleted,
-          createdAt: originalTodo.createdAt,
         }),
       });
 
