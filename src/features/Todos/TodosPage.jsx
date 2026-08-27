@@ -11,11 +11,13 @@ function TodosPage({ token }) {
     setError("");
 
     try {
-      const params = new URLSearchParams({
-        limit: 100,
-      });
+     const params = new URLSearchParams({
+  sortBy,
+  sortDirection,
+  limit: 100,
+});
 
-      const response = await fetch(`/api/tasks?${params}`, {
+      const response = await fetch(`/api/tasks?${params}`, options{
         headers: {
           "X-CSRF-TOKEN": token,
         },
