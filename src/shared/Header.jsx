@@ -1,14 +1,13 @@
-function Header({ token, onSetToken, onSetEmail }) {
-  function handleLogOut() {
-    onSetToken("");
-    onSetEmail("");
-  }
+import { useAuth } from "../context/AuthContext.jsx";
+
+function Header() {
+  const { isAuthenticated, logout } = useAuth();
 
   return (
     <header className="site-header">
       <h1>Todo List</h1>
 
-      {token && <button onClick={handleLogOut}>Log Out</button>}
+      {isAuthenticated && <button onClick={logout}>Log Out</button>}
     </header>
   );
 }

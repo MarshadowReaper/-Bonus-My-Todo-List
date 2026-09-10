@@ -1,26 +1,18 @@
-import { useState } from "react";
 import Header from "./shared/Header.jsx";
 import Logon from "./features/Logon.jsx";
-import TodosPage from "./features/Todos/TodosPage.jsx";
+import TodosPage from "./features/Todos/TodoList/TodosPage.jsx";
 
+import { useAuth } from "../context/AuthContext.jsx";
+
+// This is holding the authentication data
 function App() {
-  const [email, setEmail] = useState("");
-  const [token, setToken] = useState("");
+  const { token } = useAuth();
 
   return (
     <div>
-      <Header
-        email={email}
-        token={token}
-        onSetEmail={setEmail}
-        onSetToken={setToken}
-      />
+      <Header />
 
-      {token ? (
-        <TodosPage token={token} />
-      ) : (
-        <Logon onSetEmail={setEmail} onSetToken={setToken} />
-      )}
+      {token ? <TodosPage /> : <Logon />}
     </div>
   );
 }
