@@ -1,5 +1,6 @@
+import styles from "./ProfilePage.module.css";
 import { useEffect, useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../context/AuthContext";
 export default function ProfilePage() {
   const { email, token } = useAuth();
 
@@ -62,7 +63,7 @@ export default function ProfilePage() {
   }, [token]);
 
   return (
-    <div>
+    <div className={styles.profile}>
       <h1>User: {email}</h1>
 
       <p>Status: {token ? "Authenticated" : "Not Authenticated"}</p>
@@ -73,18 +74,20 @@ export default function ProfilePage() {
 
       {!loading && !error && (
         <>
-          <h3>Todo Stats</h3>
+          <div className="Stats">
+            <h3>Todo Stats</h3>
 
-          <p>Total Todos: {todoStats.total}</p>
-          <p>Completed: {todoStats.completed}</p>
-          <p>Active: {todoStats.active}</p>
+            <p>Total Todos: {todoStats.total}</p>
+            <p>Completed: {todoStats.completed}</p>
+            <p>Active: {todoStats.active}</p>
 
-          {todoStats.total > 0 && (
-            <p>
-              Completion:{" "}
-              {Math.round((todoStats.completed / todoStats.total) * 100)}%
-            </p>
-          )}
+            {todoStats.total > 0 && (
+              <p>
+                Completion:{" "}
+                {Math.round((todoStats.completed / todoStats.total) * 100)}%
+              </p>
+            )}
+          </div>
         </>
       )}
     </div>

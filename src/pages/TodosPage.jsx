@@ -1,10 +1,12 @@
+import DOMPurify from "dompurify";
+import styles from "./TodosPage.module.css";
 import useDebounce from "../utils/useDebounce.js";
 import SortBy from "../shared/SortBy.jsx";
 import TodoForm from "../features/Todos/TodoForm.jsx";
 import TodoList from "../features/Todos/TodoList/TodoList.jsx";
 import FilterInput from "../shared/FilterInput.jsx";
-import { useAuth } from "../contexts/AuthContext.jsx";
-import { useReducer, useEffect } from "react";
+import { useAuth } from "../context/AuthContext.jsx";
+import { useReducer, useEffect, useRef } from "react";
 import {
   todoReducer,
   initialTodoState,
@@ -35,84 +37,45 @@ function TodosPage() {
       payload: { filterTerm: newTerm },
     });
   };
-
-  const debouncedFilterTerm = useDebounce(filterTerm, 300);
-  const fetchTodos = async () => {
-    dispatch({ type: TODO_ACTIONS.FETCH_START });
-
+  const handleDelete = async (id) => {
     try {
-      const paramsObject = {
-        sortBy,
-        sortDirection,
-      };
-
-      if (debouncedFilterTerm) {
-        paramsObject.find = debouncedFilterTerm;
-      }
-
-      const params = new URLSearchParams(paramsObject);
-
-      const response = await fetch(`/api/tasks?${params}`, {
+      const response = await fetch(`/api/tasks/${id}`, {
+        method: "DELETE",
         headers: {
           "X-CSRF-TOKEN": token,
         },
         credentials: "include",
       });
 
-      if (response.status === 401) {
-        throw new Error("unauthorized");
-      }
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error("Failed to fetch todos");
-      }
-
-      if (data.tasks.length === 0) {
-        dispatch({
-          type: TODO_ACTIONS.FETCH_ERROR,
-          payload: {
-            message: "No matching todos found.",
-            isFilterError: true,
-          },
-        });
-
-        return;
+        throw new Error("Failed to delete todo");
       }
 
       dispatch({
-        type: TODO_ACTIONS.FETCH_SUCCESS,
-        payload: {
-          todos: data.tasks,
-        },
+        type: TODO_ACTIONS.DELETE_TODO,
+        payload: { id },
       });
     } catch (error) {
-      dispatch({
-        type: TODO_ACTIONS.FETCH_ERROR,
-        payload: {
-          message:
-            debouncedFilterTerm ||
-            sortBy !== "creationDate" ||
-            sortDirection !== "desc"
-              ? `Error filtering/sorting todos: ${error.message}`
-              : `Error fetching todos: ${error.message}`,
-
-          isFilterError:
-            debouncedFilterTerm ||
-            sortBy !== "creationDate" ||
-            sortDirection !== "desc",
-        },
-      });
-    } finally {
-      {
-        /*empty*/
-      }
+      console.error(error);
     }
   };
+
+  const debouncedFilterTerm = useDebounce(filterTerm, 300);
+
   async function addTodo(todoTitle) {
+    const trimmedTitle = todoTitle.trim();
+
+    if (trimmedTitle.length > 100) {
+      return;
+    }
+
+    const cleanTitle = DOMPurify.sanitize(todoTitle.trim(), {
+      ALLOWED_TAGS: [],
+      ALLOWED_ATTR: [],
+    });
     const tempTodo = {
       id: Date.now(),
-      title: todoTitle,
+      title: cleanTitle,
       isCompleted: false,
     };
 
@@ -131,11 +94,10 @@ function TodosPage() {
         },
         credentials: "include",
         body: JSON.stringify({
-          title: todoTitle,
+          title: cleanTitle,
           isCompleted: false,
         }),
       });
-
       if (!response.ok) {
         throw new Error("Failed to create todo");
       }
@@ -155,6 +117,7 @@ function TodosPage() {
         payload: {
           message: `Error adding todo: ${error.message}`,
           tempId: tempTodo.id,
+          creationDate: new Date(),
         },
       });
     }
@@ -202,10 +165,17 @@ function TodosPage() {
     }
   }
   const updateTodo = async (editedTodo) => {
+    const cleanTitle = DOMPurify.sanitize(editedTodo.title.trim(), {
+      ALLOWED_TAGS: [],
+      ALLOWED_ATTR: [],
+    });
     const previousTodo = todoList.find((todo) => todo.id === editedTodo.id);
     const updatedTodos = todoList.map((todo) => {
       if (todo.id === editedTodo.id) {
-        return { ...editedTodo };
+        return {
+          ...editedTodo,
+          title: cleanTitle,
+        };
       }
       return todo;
     });
@@ -232,7 +202,7 @@ function TodosPage() {
         },
         credentials: "include",
         body: JSON.stringify({
-          title: editedTodo.title,
+          title: cleanTitle,
           isCompleted: editedTodo.isCompleted,
         }),
       });
@@ -253,7 +223,77 @@ function TodosPage() {
 
   useEffect(() => {
     if (!token) return;
+    if (sortBy === "custom") return;
+    const fetchTodos = async () => {
+      dispatch({ type: TODO_ACTIONS.FETCH_START });
 
+      try {
+        const paramsObject = {
+          sortBy,
+          sortDirection,
+        };
+
+        if (debouncedFilterTerm) {
+          paramsObject.find = debouncedFilterTerm;
+        }
+
+        const params = new URLSearchParams(paramsObject);
+
+        const response = await fetch(`/api/tasks?${params}`, {
+          headers: {
+            "X-CSRF-TOKEN": token,
+          },
+          credentials: "include",
+        });
+
+        if (response.status === 401) {
+          throw new Error("unauthorized");
+        }
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch todos");
+        }
+
+        if (data.tasks.length === 0) {
+          dispatch({
+            type: TODO_ACTIONS.FETCH_ERROR,
+            payload: {
+              message: "No matching todos found.",
+              isFilterError: true,
+            },
+          });
+
+          return;
+        }
+
+        dispatch({
+          type: TODO_ACTIONS.FETCH_SUCCESS,
+          payload: {
+            todos: data.tasks,
+          },
+        });
+      } catch (error) {
+        dispatch({
+          type: TODO_ACTIONS.FETCH_ERROR,
+          payload: {
+            message:
+              debouncedFilterTerm ||
+              sortBy !== "creationDate" ||
+              sortDirection !== "desc"
+                ? `Error filtering/sorting todos: ${error.message}`
+                : `Error fetching todos: ${error.message}`,
+
+            isFilterError:
+              debouncedFilterTerm ||
+              sortBy !== "creationDate" ||
+              sortDirection !== "desc",
+          },
+        });
+      } finally {
+        /*empty*/
+      }
+    };
     fetchTodos();
   }, [token, sortBy, sortDirection, debouncedFilterTerm]);
   const hasSearch = debouncedFilterTerm.trim().length > 0;
@@ -274,7 +314,37 @@ function TodosPage() {
 
   const showTodos =
     !error && !filterError && !isTodoListLoading && todoList.length > 0;
+  const dragItem = useRef(null);
+  const dragOverItem = useRef(null);
 
+  const handleDragStart = (index) => {
+    dragItem.current = index;
+  };
+
+  const handleDragEnter = (index) => {
+    dragOverItem.current = index;
+  };
+
+  const handleDragEnd = () => {
+    if (
+      dragItem.current === null ||
+      dragOverItem.current === null ||
+      dragItem.current === dragOverItem.current
+    ) {
+      return;
+    }
+
+    dispatch({
+      type: TODO_ACTIONS.NATIVE_REORDER,
+      payload: {
+        dragIndex: dragItem.current,
+        hoverIndex: dragOverItem.current,
+      },
+    });
+
+    dragItem.current = null;
+    dragOverItem.current = null;
+  };
   return (
     <>
       {error && <p>{error}</p>}
@@ -315,44 +385,58 @@ function TodosPage() {
         </div>
       )}
       {isTodoListLoading && <p>Loading todos...</p>}
-      <SortBy
-        sortBy={sortBy}
-        sortDirection={sortDirection}
-        onSortByChange={(newSortBy) =>
-          dispatch({
-            type: TODO_ACTIONS.SET_SORT,
-            payload: {
-              sortBy: newSortBy,
-              sortDirection,
-            },
-          })
-        }
-        onSortDirectionChange={(newSortDirection) =>
-          dispatch({
-            type: TODO_ACTIONS.SET_SORT,
-            payload: {
-              sortBy,
-              sortDirection: newSortDirection,
-            },
-          })
-        }
-      />
-      <StatusFilter />
-      <FilterInput
-        filterTerm={filterTerm}
-        onFilterChange={handleFilterChange}
-      />
+      <div className={styles.mainContent}>
+        <div className={styles.formPanel}>
+          <SortBy
+            sortBy={sortBy}
+            sortDirection={sortDirection}
+            onSortByChange={(newSortBy) =>
+              dispatch({
+                type: TODO_ACTIONS.SET_SORT,
+                payload: {
+                  sortBy: newSortBy,
+                  sortDirection,
+                },
+              })
+            }
+            onSortDirectionChange={(newSortDirection) =>
+              dispatch({
+                type: TODO_ACTIONS.SET_SORT,
+                payload: {
+                  sortBy,
+                  sortDirection: newSortDirection,
+                },
+              })
+            }
+          />
 
-      <TodoForm onAddTodo={addTodo} />
-      {showTodos && (
-        <TodoList
-          todoList={todoList}
-          onCompleteTodo={completeTodo}
-          onUpdateTodo={updateTodo}
-          dataVersion={dataVersion}
-          statusFilter={statusFilter}
-        />
-      )}
+          <StatusFilter />
+
+          <FilterInput
+            filterTerm={filterTerm}
+            onFilterChange={handleFilterChange}
+          />
+
+          <TodoForm onAddTodo={addTodo} />
+        </div>
+
+        <div className={styles.linePanel}>
+          {showTodos && (
+            <TodoList
+              todoList={todoList}
+              onCompleteTodo={completeTodo}
+              onUpdateTodo={updateTodo}
+              onDeleteTodo={handleDelete}
+              dataVersion={dataVersion}
+              statusFilter={statusFilter}
+              sortBy={sortBy}
+              onDragStart={handleDragStart}
+              onDragEnter={handleDragEnter}
+              onDragEnd={handleDragEnd}
+            />
+          )}
+        </div>
+      </div>
     </>
   );
 }

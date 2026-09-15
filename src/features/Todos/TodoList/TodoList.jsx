@@ -1,3 +1,4 @@
+import styles from "./TodoList.module.css";
 import TodoListItem from "./TodoListItem.jsx";
 import { useMemo } from "react";
 function TodoList({
@@ -5,7 +6,12 @@ function TodoList({
   statusFilter = "all",
   onCompleteTodo,
   onUpdateTodo,
+  onDeleteTodo,
   dataVersion,
+  sortBy,
+  onDragStart,
+  onDragEnter,
+  onDragEnd,
 }) {
   const filteredTodoList = useMemo(() => {
     let filteredTodos;
@@ -47,17 +53,30 @@ function TodoList({
       {clear ? (
         <p>{getEmptyMessage()}</p>
       ) : (
-        <ul>
+        <ul className={styles.todoList}>
           {filteredTodoList.todos.length === 0 && (
             <p>No matching todos found.</p>
           )}
-          {filteredTodoList.todos.map((todo) => (
-            <TodoListItem
-              todo={todo}
+          {filteredTodoList.todos.map((todo, index) => (
+            <div
               key={todo.id}
-              onCompleteTodo={onCompleteTodo}
-              onUpdateTodo={onUpdateTodo}
-            />
+              draggable={sortBy === "custom"}
+              onDragStart={() => onDragStart(index)}
+              onDragEnter={() => onDragEnter(index)}
+              onDragEnd={onDragEnd}
+              onDragOver={(e) => e.preventDefault()}
+              style={{
+                cursor: sortBy === "custom" ? "grab" : "default",
+              }}
+            >
+              <TodoListItem
+                todo={todo}
+                key={todo.id}
+                onCompleteTodo={onCompleteTodo}
+                onUpdateTodo={onUpdateTodo}
+                onDeleteTodo={onDeleteTodo}
+              />
+            </div>
           ))}
         </ul>
       )}

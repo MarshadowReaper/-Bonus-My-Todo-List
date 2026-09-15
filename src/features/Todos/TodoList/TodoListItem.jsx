@@ -1,7 +1,8 @@
+import styles from "./TodoListItem.module.css";
 import TextInputWithLabel from "../../../shared/TextInputWithLabel";
 import { useState } from "react";
 import { isValidTodoTitle } from "../../../utils/todoValidation";
-function TodoListItem({ todo, onCompleteTodo, onUpdateTodo }) {
+function TodoListItem({ todo, onCompleteTodo, onUpdateTodo, onDeleteTodo }) {
   const [isEditing, setIsEditing] = useState(false);
   const [workingTitle, setWorkingTitle] = useState(todo.title);
   const handleStartEdit = () => {
@@ -54,6 +55,18 @@ function TodoListItem({ todo, onCompleteTodo, onUpdateTodo }) {
             onChange={() => onCompleteTodo(todo.id)}
           />
           <span onClick={handleStartEdit}>{todo.title}</span>
+          <span>
+            {todo.isCompleted ? (
+              <span>
+                <button
+                  onClick={() => onDeleteTodo(todo.id)} // <-- Calls parent function
+                  className={styles.deleteButton}
+                >
+                  X
+                </button>
+              </span>
+            ) : null}
+          </span>
         </>
       )}
     </li>
