@@ -14,6 +14,7 @@ function SortBy({
       >
         <option value="createdAt">Created At</option>
         <option value="title">Title</option>
+        <option value="custom">Custom</option>
       </select>
 
       <label htmlFor="sortDirection">Order:</label>

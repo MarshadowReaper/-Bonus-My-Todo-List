@@ -13,7 +13,10 @@ export const TODO_ACTIONS = {
   UPDATE_TODO_START: "UPDATE_TODO_START",
   UPDATE_TODO_SUCCESS: "UPDATE_TODO_SUCCESS",
   UPDATE_TODO_ERROR: "UPDATE_TODO_ERROR",
+  DELETE_TODO: "DELETE_TODO",
+  DELETE_COMPLETED: "DELETE_COMPLETED",
   SET_SORT: "SET_SORT",
+  NATIVE_REORDER: "NATIVE_REORDER",
   SET_FILTER: "SET_FILTER",
   RESET_FILTERS: "RESET_FILTERS",
   CLEAR_ERROR: "CLEAR_ERROR",
@@ -88,6 +91,15 @@ export function todoReducer(state, action) {
             : todo,
         ),
       };
+    case TODO_ACTIONS.DELETE_TODO:
+      return {
+        ...state,
+        todoList: state.todoList.filter(
+          (todo) => todo.id !== action.payload.id,
+        ),
+        dataVersion: state.dataVersion + 1,
+      };
+
     case TODO_ACTIONS.COMPLETE_TODO_SUCCESS:
       return {
         ...state,
@@ -125,6 +137,19 @@ export function todoReducer(state, action) {
         sortBy: action.payload.sortBy,
         sortDirection: action.payload.sortDirection,
       };
+    case TODO_ACTIONS.NATIVE_REORDER: {
+      const { dragIndex, hoverIndex } = action.payload;
+      const updatedTodos = [...state.todoList];
+
+      const [removedItem] = updatedTodos.splice(dragIndex, 1);
+      updatedTodos.splice(hoverIndex, 0, removedItem);
+
+      return {
+        ...state,
+        sortBy: "custom",
+        todoList: updatedTodos,
+      };
+    }
     case TODO_ACTIONS.UPDATE_TODO_START:
       return {
         ...state,
