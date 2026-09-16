@@ -5,14 +5,14 @@
   min-height: 100vh;
 }
 .light {
-  max-width: 1200 px;
+  max-width: 1200px;
   background: white;
   color: black;
   min-height: 100vh;
 }
 
 .dark {
-  max-width: 1200 px;
+  max-width: 1200px;
   background: #1e1e1e;
   color: white;
   min-height: 100vh;
